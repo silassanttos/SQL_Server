@@ -27,4 +27,5 @@ WHERE
 ORDER BY 
     login_name, role_name;
     
-    ![image](https://user-images.githubusercontent.com/69328711/226206096-01813ca5-774f-4139-be4d-c4c8ae97310d.png)
+    
+   ![image](https://user-images.githubusercontent.com/69328711/226206096-01813ca5-774f-4139-be4d-c4c8ae97310d.png)
