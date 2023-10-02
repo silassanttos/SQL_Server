@@ -1,0 +1,35 @@
+<h2> Tamanho do banco de dados: </h2>
+Esta consulta retorna o tamanho total do banco de dados, incluindo o espaço alocado e o espaço não alocado.
+
+
+USE NomeDoBancoDeDados;
+GO
+
+SELECT 
+    DB_NAME(database_id) AS DatabaseName,
+    CONVERT(DECIMAL(18,2), SUM(size) * 8 / 1024.0) AS SizeInMB
+FROM sys.master_files
+GROUP BY database_id;
+
+
+
+<h2>Tamanho das tabelas individuais: </h2>
+
+
+USE NomeDoBancoDeDados;
+GO
+
+SELECT 
+    t.NAME AS TableName,
+    i.name AS IndexName,
+    SUM(p.rows) AS RowCounts,
+    SUM(a.total_pages) * 8 / 1024.0 AS TotalSpaceMB,
+    SUM(a.used_pages) * 8 / 1024.0 AS UsedSpaceMB,
+    (SUM(a.total_pages) - SUM(a.used_pages)) * 8 / 1024.0 AS UnusedSpaceMB
+FROM sys.tables t
+INNER JOIN sys.indexes i ON t.OBJECT_ID = i.object_id
+INNER JOIN sys.partitions p ON i.object_id = p.OBJECT_ID AND i.index_id = p.index_id
+INNER JOIN sys.allocation_units a ON p.partition_id = a.container_id
+WHERE t.NAME NOT LIKE 'dt%' AND i.OBJECT_ID > 255
+GROUP BY t.NAME, i.name, p.rows
+ORDER BY TotalSpaceMB DESC;
