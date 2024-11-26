@@ -1,0 +1,45 @@
+--STP_API_VIACEP_WEB '01240020'
+CREATE PROCEDURE STP_API_VIACEP_WEB @Cep Varchar(10) AS 
+BEGIN
+    DECLARE @Obj Int, @Url Varchar(50), @RetornoAPI Varchar(2000)
+
+    SET @Url = CONCAT('https://viacep.com.br/ws/', @Cep, '/json/')
+
+    EXEC sp_OACreate 'MSXML2.XMLHTTP', @Obj OUTPUT
+    EXEC sp_OAMethod @Obj, 'open', NULL, 'GET', @Url, 'false'
+    EXEC sp_OAMethod @Obj, 'send'
+    EXEC sp_OAMethod @Obj, 'responseText', @RetornoAPI OUTPUT
+    EXEC sp_OADestroy @Obj
+
+    DECLARE @Bairro Varchar(200), @Rua Varchar(200), @UF Char(2), @Localidade Varchar(100), @IBGE Varchar(10)
+
+    SELECT @Rua = [value]
+    FROM OpenJson(@RetornoAPI)
+    WHERE [key] = 'logradouro'
+
+    SELECT @Bairro = [value]
+    FROM OpenJson(@RetornoAPI)
+    WHERE [key] = 'bairro'
+
+    SELECT @UF = [value]
+    FROM OpenJson(@RetornoAPI)
+    WHERE [key] = 'uf'
+
+    SELECT @Localidade = [value]
+    FROM OpenJson(@RetornoAPI)
+    WHERE [key] = 'localidade'
+
+    SELECT @IBGE = [value]
+    FROM OpenJson(@RetornoAPI)
+    WHERE [key] = 'ibge'
+
+    INSERT Cep (Cep, Bairro, Rua, Localidade, UF, IBGE)
+    SELECT @Cep, @Bairro, @Rua, @Localidade, @UF, @IBGE
+
+    -- Retorna apenas os dados do último endereço inserido
+    SELECT TOP 1 * 
+    FROM Cep 
+    WHERE Cep = @Cep 
+    ORDER BY Pk DESC
+END
+
