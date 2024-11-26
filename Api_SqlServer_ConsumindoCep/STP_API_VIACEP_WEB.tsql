@@ -3,7 +3,7 @@ CREATE PROCEDURE STP_API_VIACEP_WEB @Cep Varchar(10) AS
 BEGIN
     DECLARE @Obj Int, @Url Varchar(50), @RetornoAPI Varchar(2000)
 
-    SET @Url = CONCAT('https://viacep.com.br/ws/', @Cep, '/json/')
+    SET @Url = CONCAT('https://viacep.com.br/ws/', @Cep, '/json/');
 
     EXEC sp_OACreate 'MSXML2.XMLHTTP', @Obj OUTPUT
     EXEC sp_OAMethod @Obj, 'open', NULL, 'GET', @Url, 'false'
